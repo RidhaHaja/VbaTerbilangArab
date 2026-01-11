@@ -6,6 +6,7 @@ Rem ============================================================================
 Rem PROYEK       : Konverter Angka ke Terbilang Arab (Edisi Pro+)
 Rem PENULIS      : Rida Rahman DH 96-02
 Rem BLOG         : https://ridahaja.blogspot.com
+Rem github          : https://github.com/RidhaHaja
 Rem TANGGAL      : Januari 2026
 Rem ===============================================================================================================
 Rem MIT LICENSE (BILINGUAL):
@@ -356,63 +357,73 @@ End Function
 
 Public Function ArabCurrency(ByVal angka As Variant, _
                              Optional ByVal KodeNegara As String = "id") As String
-    ' Parameter KodeNegara (Gunakan Huruf Kecil):
-    ' id (Indonesia), sa (Saudi), kw (Kuwait), ae (UEA), qa (Qatar)
-    ' my (Malaysia), sg (Singapura), bn (Brunei), jp (Jepang), cn (China)
+    ' ==================================================================================
+    ' FUNGSI: Mengonversi angka ke terbilang mata uang dalam bahasa Arab
+    ' PARAMETER:
+    '   - angka      : Nilai yang akan dikonversi (contoh: 1500.50)
+    '   - KodeNegara : id, sa, kw, ae, qa, my, sg, bn, jp, cn
+    ' ==================================================================================
     
     Dim HasilUtama As String, StrAngka As String
     Dim BagianBulat As String, BagianDesimal As String
     Dim PosKoma As Long
     Dim TeksMataUang As String, TeksSen As String, WAW As String
+    Dim GenderUtama As GenderArab, GenderKecil As GenderArab
     
     ' Karakter Unicode untuk kata hubung "dan" (Waw)
     WAW = " " & ChrW(1608) & " "
     KodeNegara = LCase(Trim(KodeNegara))
     
     Select Case KodeNegara
-        Case "id" ' Indonesia: Rupiah & Sen
+        Case "id" ' Indonesia: Rupiah (Muannas) & Sen (Muzakkar)
             TeksMataUang = ChrW(1585) & ChrW(1608) & ChrW(1576) & ChrW(1610) & ChrW(1577)
             TeksSen = ChrW(1587) & ChrW(1606)
+            GenderUtama = Muannas: GenderKecil = Muzakkar
             
-        Case "sa" ' Saudi Arabia: Riyal & Halalah
+        Case "sa" ' Saudi Arabia: Riyal (Muzakkar) & Halalah (Muannas)
             TeksMataUang = ChrW(1585) & ChrW(1610) & ChrW(1575) & ChrW(1604)
             TeksSen = ChrW(1607) & ChrW(1604) & ChrW(1604) & ChrW(1577)
+            GenderUtama = Muzakkar: GenderKecil = Muannas
             
-        Case "kw" ' Kuwait: Dinar & Fils
+        Case "kw" ' Kuwait: Dinar (Muzakkar) & Fils (Muzakkar)
             TeksMataUang = ChrW(1583) & ChrW(1610) & ChrW(1606) & ChrW(1575) & ChrW(1585)
             TeksSen = ChrW(1601) & ChrW(1604) & ChrW(1587)
+            GenderUtama = Muzakkar: GenderKecil = Muzakkar
             
-        Case "ae" ' Uni Emirat Arab: Dirham & Fils
+        Case "ae" ' UEA: Dirham (Muzakkar) & Fils (Muzakkar)
             TeksMataUang = ChrW(1583) & ChrW(1585) & ChrW(1607) & ChrW(1605)
             TeksSen = ChrW(1601) & ChrW(1604) & ChrW(1587)
+            GenderUtama = Muzakkar: GenderKecil = Muzakkar
             
-        Case "qa" ' Qatar: Riyal & Dirham
+        Case "qa" ' Qatar: Riyal (Muzakkar) & Dirham (Muzakkar)
             TeksMataUang = ChrW(1585) & ChrW(1610) & ChrW(1575) & ChrW(1604)
             TeksSen = ChrW(1583) & ChrW(1585) & ChrW(1607) & ChrW(1605)
+            GenderUtama = Muzakkar: GenderKecil = Muzakkar
             
-        Case "my" ' Malaysia: Ringgit & Sen
+        Case "my" ' Malaysia: Ringgit (Muzakkar) & Sen (Muzakkar)
             TeksMataUang = ChrW(1585) & ChrW(1610) & ChrW(1606) & ChrW(1580) & ChrW(1610) & ChrW(1578)
             TeksSen = ChrW(1587) & ChrW(1606)
+            GenderUtama = Muzakkar: GenderKecil = Muzakkar
             
-        Case "sg", "bn" ' Singapura & Brunei: Dollar & Sen
+        Case "sg", "bn" ' Singapura & Brunei: Dollar (Muzakkar) & Sen (Muzakkar)
             TeksMataUang = ChrW(1583) & ChrW(1608) & ChrW(1604) & ChrW(1575) & ChrW(1585)
             TeksSen = ChrW(1587) & ChrW(1606)
+            GenderUtama = Muzakkar: GenderKecil = Muzakkar
             
-        Case "jp" ' Jepang: Yen
+        Case "jp" ' Jepang: Yen (Muzakkar)
             TeksMataUang = ChrW(1610) & ChrW(1606)
-            TeksSen = ""
+            TeksSen = "": GenderUtama = Muzakkar
             
-        Case "cn" ' China: Yuan
+        Case "cn" ' China: Yuan (Muzakkar)
             TeksMataUang = ChrW(1610) & ChrW(1608) & ChrW(1575) & ChrW(1606)
-            TeksSen = ""
+            TeksSen = "": GenderUtama = Muzakkar
             
         Case Else
-            TeksMataUang = ""
-            TeksSen = ""
+            TeksMataUang = "": TeksSen = ""
+            GenderUtama = Muzakkar: GenderKecil = Muzakkar
     End Select
 
-    ' Logika pemisahan angka bulat dan desimal
-    StrAngka = CStr(angka)
+    StrAngka = Replace(CStr(angka), " ", "")
     PosKoma = InStr(StrAngka, ",")
     If PosKoma = 0 Then PosKoma = InStr(StrAngka, ".")
     
@@ -424,14 +435,19 @@ Public Function ArabCurrency(ByVal angka As Variant, _
         BagianDesimal = ""
     End If
     
-    HasilUtama = Arab(BagianBulat, 1, Muannas, Modern, False, Marfu) & " " & TeksMataUang
+    If Val(BagianBulat) = 0 Then
+        HasilUtama = Kata(0, GenderUtama) & " " & TeksMataUang
+    Else
+        HasilUtama = Arab(BagianBulat, 1, GenderUtama, Modern, False, Marfu) & " " & TeksMataUang
+    End If
     
-    ' Proses bagian sen (maksimal 2 digit untuk mata uang)
+    ' Konversi bagian sen (Maksimal 2 digit untuk mata uang)
     If Val(BagianDesimal) > 0 And TeksSen <> "" Then
         If Len(BagianDesimal) > 2 Then BagianDesimal = Left(BagianDesimal, 2)
-        ' Pastikan desimal diproses sebagai satuan terkecil
+        If Len(BagianDesimal) = 1 Then BagianDesimal = BagianDesimal & "0"
+        
         HasilUtama = HasilUtama & WAW & _
-                     Arab(BagianDesimal, 1, Muannas, Modern, False, Marfu) & " " & TeksSen
+                     Arab(BagianDesimal, 1, GenderKecil, Modern, False, Marfu) & " " & TeksSen
     End If
     
     ArabCurrency = Trim(HasilUtama)
