@@ -90,5 +90,3 @@ This software is free to use under the MIT License / Perangkat lunak ini tersedi
 **GitHub:** [github.com/RidhaHaja](https://github.com/RidhaHaja)
 
 ---
-
-Apakah Anda ingin saya membantu menambahkan **Tabel Parameter** yang lebih detail ke dalam draf dua bahasa ini?
